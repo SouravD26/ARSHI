@@ -8,7 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 5000;
 const GALLERY_DIR = path.join(__dirname, 'gallery');
-const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
+// Vercel's filesystem is read-only except /tmp (which is temporary)
+const BOOKINGS_FILE = process.env.VERCEL ? '/tmp/bookings.json' : path.join(__dirname, 'bookings.json');
 
 app.use(cors());
 app.use(express.json());
@@ -75,4 +76,8 @@ if (fs.existsSync(dist)) {
   app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
 }
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+}
+
+export default app;
