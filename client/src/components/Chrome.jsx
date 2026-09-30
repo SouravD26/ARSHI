@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring, useMotionValue } from 'framer-motion';
 
 export function ScrollProgress() {
   const { scrollYProgress } = useScroll();
@@ -46,5 +46,50 @@ export function FloatingActions() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+export function Cursor() {
+  const [enabled] = useState(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+  const [state, setState] = useState({ hover: false, down: false, hidden: true });
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const ringX = useSpring(x, { stiffness: 350, damping: 30, mass: 0.6 });
+  const ringY = useSpring(y, { stiffness: 350, damping: 30, mass: 0.6 });
+
+  useEffect(() => {
+    if (!enabled) return;
+    document.documentElement.classList.add('has-cursor');
+    const move = (e) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+      const hover = !!e.target.closest('a, button, select, input, label, textarea, [role="button"]');
+      setState((s) => (s.hover === hover && !s.hidden ? s : { ...s, hover, hidden: false }));
+    };
+    const down = () => setState((s) => ({ ...s, down: true }));
+    const up = () => setState((s) => ({ ...s, down: false }));
+    const leave = () => setState((s) => ({ ...s, hidden: true }));
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mousedown', down);
+    window.addEventListener('mouseup', up);
+    document.addEventListener('mouseleave', leave);
+    return () => {
+      document.documentElement.classList.remove('has-cursor');
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mousedown', down);
+      window.removeEventListener('mouseup', up);
+      document.removeEventListener('mouseleave', leave);
+    };
+  }, [enabled, x, y]);
+
+  if (!enabled) return null;
+  const ringScale = state.down ? 0.8 : state.hover ? 1.8 : 1;
+  return (
+    <>
+      <motion.div className="cursor-ring" style={{ x: ringX, y: ringY }} animate={{ scale: ringScale, opacity: state.hidden ? 0 : 1 }} transition={{ duration: 0.25 }}>
+        <span className={state.hover ? 'is-hover' : ''} />
+      </motion.div>
+      <motion.div className="cursor-dot" style={{ x, y }} animate={{ scale: state.hover ? 0 : 1, opacity: state.hidden ? 0 : 1 }} transition={{ duration: 0.2 }} />
+    </>
   );
 }

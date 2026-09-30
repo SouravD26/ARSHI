@@ -4,7 +4,7 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import PageHeader from './components/PageHeader.jsx';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
-import { ScrollProgress, Preloader, FloatingActions } from './components/Chrome.jsx';
+import { ScrollProgress, Preloader, FloatingActions, Cursor } from './components/Chrome.jsx';
 import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Services from './components/Services.jsx';
@@ -59,6 +59,7 @@ export default function App() {
         <AnimatedRoutes services={services} business={business} />
         <Footer business={business} />
         <FloatingActions />
+        <Cursor />
       </BrowserRouter>
     </MotionConfig>
   );
